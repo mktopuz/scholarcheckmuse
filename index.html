@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thesis &amp; Dissertation Format Checker</title>
+<meta name="description" content="Check your thesis or dissertation .docx against your school's formatting guidelines. Rule-based checks run entirely in your browser; your document is never uploaded or stored.">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <h1>Thesis &amp; Dissertation Format Checker</h1>
+    <p class="tagline">Check margins, spacing, fonts, headings and page numbers against your school's guidelines — before your graduate school does.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="privacy-banner">
+    <strong>Your document never leaves this device.</strong>
+    The file is opened and checked inside this browser tab. Nothing is uploaded, stored, or copied anywhere.
+    Only the report exists, and only on this page — download it if you want to keep it.
+  </div>
+
+  <section class="card" id="step-file">
+    <h2><span class="step">1</span> Your document</h2>
+    <div id="dropzone" class="dropzone" tabindex="0">
+      <p class="dz-main">Drop your .docx here</p>
+      <p class="dz-sub">or click to choose a file — Word .docx only (.doc and PDF cannot be checked)</p>
+      <input type="file" id="fileInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+    </div>
+    <p id="fileInfo" class="file-info" hidden></p>
+  </section>
+
+  <section class="card" id="step-rules">
+    <h2><span class="step">2</span> Rules</h2>
+    <div class="grid-2">
+      <label>School / guideline set
+        <select id="schoolSelect"></select>
+      </label>
+      <label>Document type
+        <select id="docTypeSelect">
+          <option value="thesis">Master's thesis</option>
+          <option value="dissertation">Doctoral dissertation</option>
+        </select>
+      </label>
+    </div>
+    <p id="profileNote" class="note"></p>
+
+    <details id="customRulesBox">
+      <summary>Custom rules — type the exact values from your own guide</summary>
+      <div class="grid-3">
+        <label>Margin top (in)<input type="number" id="cr-marginTop" step="0.25" min="0" value="1"></label>
+        <label>Margin right (in)<input type="number" id="cr-marginRight" step="0.25" min="0" value="1"></label>
+        <label>Margin bottom (in)<input type="number" id="cr-marginBottom" step="0.25" min="0" value="1"></label>
+        <label>Margin left (in)<input type="number" id="cr-marginLeft" step="0.25" min="0" value="1"></label>
+        <label>Line spacing
+          <select id="cr-lineSpacing">
+            <option value="2">Double (2.0)</option>
+            <option value="1.5">1.5</option>
+            <option value="1">Single (1.0)</option>
+          </select>
+        </label>
+        <label>Body font
+          <select id="cr-bodyFont">
+            <option>Times New Roman</option>
+            <option>Calibri</option>
+            <option>Arial</option>
+            <option>Georgia</option>
+            <option>Garamond</option>
+            <option>Cambria</option>
+          </select>
+        </label>
+        <label>Body size (pt)<input type="number" id="cr-bodySize" step="0.5" min="6" value="12"></label>
+        <label>Abstract word limit (blank = not checked)<input type="number" id="cr-abstractLimit" step="1" min="1" placeholder="none"></label>
+        <label>Page numbers
+          <select id="cr-pageNumLoc">
+            <option value="either">Header or footer</option>
+            <option value="footer">Footer only</option>
+            <option value="header">Header only</option>
+          </select>
+        </label>
+        <label>Page number alignment
+          <select id="cr-pageNumAlign">
+            <option value="either">Any</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </label>
+      </div>
+      <p class="note">Choosing the "Custom rules" guideline set uses these values instead of a built-in profile.</p>
+    </details>
+
+    <details id="addSchoolBox">
+      <summary>Add guidelines for a school — save them under the school's name</summary>
+      <p class="note">Type the values from the school's official guide once. The guideline set is saved in this browser and appears in the School list above, next to the built-ins. Saving again under the same name replaces it.</p>
+      <div class="grid-2">
+        <label>School name<input type="text" id="ns-name" placeholder="e.g. University of Tulsa — Graduate College" spellcheck="false"></label>
+        <label>Applies to
+          <select id="ns-applies">
+            <option value="both">Thesis and dissertation</option>
+            <option value="thesis">Master's thesis only</option>
+            <option value="dissertation">Doctoral dissertation only</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid-3">
+        <label>Margin top (in)<input type="number" id="ns-marginTop" step="0.25" min="0" value="1"></label>
+        <label>Margin right (in)<input type="number" id="ns-marginRight" step="0.25" min="0" value="1"></label>
+        <label>Margin bottom (in)<input type="number" id="ns-marginBottom" step="0.25" min="0" value="1"></label>
+        <label>Margin left (in)<input type="number" id="ns-marginLeft" step="0.25" min="0" value="1"></label>
+        <label>Line spacing
+          <select id="ns-lineSpacing">
+            <option value="2">Double (2.0)</option>
+            <option value="1.5">1.5</option>
+            <option value="1">Single (1.0)</option>
+          </select>
+        </label>
+        <label>Body font<input type="text" id="ns-bodyFont" value="Times New Roman" spellcheck="false"></label>
+        <label>Body size (pt)<input type="number" id="ns-bodySize" step="0.5" min="6" value="12"></label>
+        <label>Abstract word limit (blank = not checked)<input type="number" id="ns-abstractLimit" step="1" min="1" placeholder="none"></label>
+        <label>Page numbers
+          <select id="ns-pageNumLoc">
+            <option value="either">Header or footer</option>
+            <option value="footer">Footer only</option>
+            <option value="header">Header only</option>
+          </select>
+        </label>
+        <label>Page number alignment
+          <select id="ns-pageNumAlign">
+            <option value="either">Any</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </label>
+      </div>
+      <label>Required parts (comma-separated)
+        <input type="text" id="ns-requiredParts" value="Abstract, Table of Contents, References" spellcheck="false">
+      </label>
+      <div class="report-actions" style="margin-top:10px">
+        <button id="nsSaveBtn" type="button">Save this school's guidelines</button>
+        <button id="nsExportBtn" type="button">Export saved schools (JSON)</button>
+        <button id="nsImportBtn" type="button">Import schools (JSON)</button>
+        <input type="file" id="nsImportFile" accept=".json,application/json" hidden>
+      </div>
+      <p id="nsStatus" class="note"></p>
+      <div id="nsList"></div>
+    </details>
+  </section>
+
+  <section class="card" id="step-check">
+    <h2><span class="step">3</span> Check</h2>
+    <button id="checkBtn" class="primary" disabled>Check formatting</button>
+    <p id="checkStatus" class="note"></p>
+  </section>
+
+  <section class="card" id="reportCard" hidden>
+    <div class="report-head">
+      <h2>Report</h2>
+      <div class="report-actions">
+        <button id="csvBtn">Download CSV</button>
+        <button id="printBtn">Print</button>
+      </div>
+    </div>
+    <p id="reportMeta" class="note"></p>
+    <p id="reportSummary" class="summary"></p>
+    <div id="reportResults"></div>
+
+    <div class="ai-box">
+      <h3>AI review <span class="badge">optional</span></h3>
+      <p class="note">Rules catch measurable formatting. An AI review can flag things rules cannot — inconsistent heading capitalization, a missing abstract, caption wording that drifts. It is off until you add your own API key below.</p>
+      <details id="aiSettings">
+        <summary>AI settings — your key stays on this device</summary>
+        <div class="grid-2">
+          <label>Provider base URL
+            <input type="text" id="aiBaseUrl" value="https://api.openai.com/v1" spellcheck="false">
+          </label>
+          <label>Model
+            <input type="text" id="aiModel" value="gpt-4o-mini" spellcheck="false">
+          </label>
+          <label>API key
+            <input type="password" id="aiKey" placeholder="sk-..." autocomplete="off">
+          </label>
+        </div>
+        <p class="note">The key is kept in this browser's local storage only — never in the document, never on a server of ours (there is none). When you run an AI review, <em>text excerpts</em> from your document (headings, front matter, samples) are sent to the provider at the base URL above. Rule checks never send anything.</p>
+      </details>
+      <button id="aiBtn">Run AI review</button>
+      <p id="aiStatus" class="note"></p>
+      <div id="aiResults"></div>
+    </div>
+  </section>
+
+  <section class="card explainer">
+    <h2>What is checked</h2>
+    <ul>
+      <li><strong>Page size and margins</strong> — read from every section of the document and compared with the guideline values, with a small tolerance so Word rounding does not raise false alarms.</li>
+      <li><strong>Line spacing</strong> — resolved the way Word resolves it: paragraph setting, then style, then document defaults.</li>
+      <li><strong>Body font and size</strong> — weighted by how much text actually uses each font. Table text is reported separately, because most guides allow smaller type in tables.</li>
+      <li><strong>Heading structure</strong> — whether chapter and section titles really use Heading 1/2/3 styles. Bold text alone is not a heading, and without styles Word cannot build an automatic table of contents.</li>
+      <li><strong>Page numbers</strong> — whether a page-number field exists in a header or footer, and where it sits.</li>
+      <li><strong>Required parts</strong> — the front-matter sections your document type requires (abstract, table of contents, references, and similar).</li>
+    </ul>
+    <h2>What it cannot do — honestly</h2>
+    <ul>
+      <li>It cannot name the page a problem is on: a .docx does not store page breaks. The report gives the section, the paragraph number, and the first words of the paragraph instead.</li>
+      <li>It does not judge content, argument, or citation style, and it never modifies your file.</li>
+      <li>Built-in guideline values are starting points, not gospel. Guides are revised every few years — if yours differs, use Custom rules with the exact values from your current guide.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Format Checker — runs entirely in your browser. No accounts, no uploads, no storage.</p>
+  </div>
+</footer>
+
+<script src="js/profiles.js"></script>
+<script src="js/docx.js"></script>
+<script src="js/checker.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
